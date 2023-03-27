@@ -1,0 +1,53 @@
+The course project could be in Option A or Option B:
+
+Option A:
+
+I prefer that you come out with some project topics that you are interested in and are suitable for the simulation study. The simulation project could be in any application domain, such as simulation of a hospital emergency, simulation of infectious disease spread, simulation of Uber services in a city, etc. You can also find a research paper that uses simulation for performance evaluation, repeat the paper’s simulation, and compare your results/conclusion with those in the paper.
+
+Please send me your proposed topic by the end of next week (March 3).
+
+Option B:
+
+If you do not have anything in mind, the following is a project topic that you can work on.  
+
+Title: Load-balancing with Random Choices
+
+Background: Load balancing is used in many systems, e.g., cloud computing, web server farms, Domain Name Servers (DNS). As an abstract model, we assume a set of $m$ servers work in parallel to serve customers. Each server could be modelled as a FIFO queueing system. When a new customer arrives, the customer must first go through a load balancer. The load balancer can use different strategies to dispatch the customer to a server. To simplify, we in this project consider a randomized strategy as follows:
+
+(Step 1) The load balancer randomly selects $d$ servers ($d < m$)
+
+(Step 2) The load balancer checks the queue length of the selected $d$ servers
+
+(Step 3) The load balancer dispatches the incoming customer to the server that has the shortest queue length.
+
+We denote the above scheduling method RandMin. The goal of this project is to compare its performance with two baseline methods and draw your conclusion based on your simulation results.
+
+(Baseline 1) Purely random (PureRand): The load balancer randomly selects one server from the $m$ servers and dispatches the incoming customer to the selected server.
+
+(Baseline 2) Round-robin (RR): The load balancer uses the round-robin method to dispatch incoming customers, i.e., the order of servers for dispatching customers is $1, 2, …, m, 1, 2, …, m, 1, 2, …$
+
+Assumptions:
+
+We assume that all servers’ service time follows exponential distribution of rate parameter $\mu$
+We assume that the customer arrivals follow the Poisson arrival process with mean arrival rate $\lambda$
+We ignore the processing time of the load balancer.
+
+The following performance metrics should be evaluated: 
+
+Maximum workload: defined as the longest queue length among the $m$ servers
+Average workload: defined as the average queue length among the $m$ servers
+Average system time: defined as the average time that all customers stay in the system.
+
+Note that $m$, $d$, $\mu$,$\lambda$ are system parameters you need to test with different combinations. Guidelines on how to run simulation and discuss results will be posted later.
+
+-----------------
+
+Dear all:
+
+Several students asked about the grading criteria and the expectation of the course project. I understand your concern about losing marks, but defining a bullet list of grading criteria for a project report is hard. This is more or less like reviewing a research paper. I will post a separate message on how to perform simulation studies and what should be included in your report. 
+
+To give you a more concrete idea of what I am expecting, I posted two sample project reports from previous students in the same course, one for Option A and one for Option B. The reports can be found in Brightspace, Content-Weeks 7, 8. 
+
+Note that you are encouraged (but not required) to use existing simulators, such as Ominet++ or Mininet. Self-learning a popular simulator may be time-consuming, but it is rewarding (for your future job hunting). Also, you can use any language.  
+
+Kui Wu
