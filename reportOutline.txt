@@ -1,0 +1,34 @@
+
+PROJECT OUTLINE:
+    simulation goals:
+        What do we want to accomplish with our simulation?
+
+    simulation parameters:
+        What is subject to change with each simulation?
+
+METHODOLOGY:
+    simulation setup/initilization:
+        How did you setup the simulations?
+
+    data collection:
+        How did we collect the stats?
+
+    statistic visualization/evaluation:
+        How are we going to evaluate the results?
+
+RESULTS AND ANALYSIS:
+    inividual runs:
+        Show results for each run. 
+        Is it what we expected? 
+
+    grand statistic evaluation/comparison:
+        What was the best and worst way to load the plane. Why? 
+
+DISSCUSSION AND CONCLUSION:
+    what we learned:
+        What did we use from class and which out-of-course resourses did we use. Why? 
+
+    insights and imporvments for next time:
+        What were we limited to? 
+        Why didn't we implement factors x, y, or z? 
+        In a perfect world, what else would we have taken into account? 
