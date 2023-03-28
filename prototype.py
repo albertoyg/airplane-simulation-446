@@ -2,10 +2,11 @@ import random
 
 def run_simulation():
     num_rows = 10
+    num_seats = 1   # Number of seats on each side of the aisle
 
     aisle_rows = [-1 for i in range(num_rows)]
-    seat_rows = [-1 for i in range(num_rows)]
-    assigned_seats = [i for i in range(num_rows)]
+    seat_rows = [-1 for i in range(num_rows*num_seats*2)]
+    assigned_seats = [i for i in range(num_rows*num_seats*2)]
     random.shuffle(assigned_seats)
     queue = assigned_seats.copy()
 
@@ -13,25 +14,39 @@ def run_simulation():
     num_seated = 0
 
     def draw_plane(aisle_positions, seat_positions):
-        for i in range(num_rows):
-            print(f"{i}  |", end="")
+        print("_" * (num_rows * 7 + 1))
+        print("Row number:        ", end="")
+        for i in range(0, num_rows*num_seats*2, 2):
+            print(f"{str(i).ljust(4)}|", end="")
         print()
-        for i in range(num_rows):
-            print(f"{str(seat_positions[i]).ljust(3)}|", end="")
+        print("Seated passengers: ", end="")
+        for i in range(0, num_rows*num_seats*2, 2):
+            print(f"{str(seat_positions[i]).ljust(4)}|", end="")
         print()
+        print("Aisle passengers:  ", end="")
         for i in range(num_rows):
-            print(f"{str(aisle_positions[i]).ljust(3)}|", end="")
+            print(f"{str(aisle_positions[i]).ljust(4)}|", end="")
         print()
-        print("_" * (num_rows * 4 + 1))
+        print("Seated passengers: ", end="")
+        for i in range(1, num_rows*num_seats*2, 2):
+            print(f"{str(seat_positions[i]).ljust(4)}|", end="")
+        print()
+        print("Row number:        ", end="")
+        for i in range(1, num_rows*num_seats*2, 2):
+            print(f"{str(i).ljust(4)}|", end="")
+        print()
+        print("_" * (num_rows * 7 + 1))
 
     time_steps = 0
-    while num_seated < num_rows:
+    # Loop until all passengers are seated
+    while num_seated < num_rows*num_seats*2:
+        # Loop through each row from the back to the front, moving passengers forward if possible
         for aisle_row in range(num_rows-1, -1, -1):
             if aisle_rows[aisle_row] == -1:
                 continue
             assigned_seat = aisle_rows[aisle_row]
             # Check if passenger is in the row of their assigned seat
-            if assigned_seat == aisle_row:
+            if (aisle_row*2)+1 - assigned_seat in [0, 1]:
                 # Start storing baggage timer
                 if storing_baggage[aisle_row] == 0:
                     storing_baggage[aisle_row] = 3
@@ -39,7 +54,7 @@ def run_simulation():
                     storing_baggage[aisle_row] -= 1
                     # If timer is up then seat the passenger
                     if storing_baggage[aisle_row] == 0:
-                        seat_rows[aisle_row] = assigned_seat
+                        seat_rows[assigned_seat] = assigned_seat
                         aisle_rows[aisle_row] = -1
                         num_seated += 1
             else:
