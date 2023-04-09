@@ -4,18 +4,21 @@ import matplotlib.pyplot as plt
 
 def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets):
     str_len = 7
+
     def seated_pass_str(passenger):
         if passenger == -1:
-            return "".ljust(str_len)+"|"
+            return "".ljust(str_len) + "|"
         else:
-            return str(passenger).ljust(str_len)+"|"
+            return str(passenger).ljust(str_len) + "|"
+
     def aisle_pass_str(passenger, ticket):
         if passenger == -1:
-            return "".ljust(str_len)+"|"
+            return "".ljust(str_len) + "|"
         else:
-            return f"{passenger}:{ticket['row']},{ticket['seat']}".ljust(str_len)+"|"
+            return f"{passenger}:{ticket['row']},{ticket['seat']}".ljust(str_len) + "|"
+
     # Print the row numbers
-    print("_" * (num_rows * (str_len+1) + 19))
+    print("_" * (num_rows * (str_len + 1) + 19))
     print("Row number: ".ljust(18), end="")
     for i in range(0, num_rows):
         print(f"{str(i).ljust(str_len)}|", end="")
@@ -33,12 +36,12 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets):
         print(f"{aisle_pass_str(passenger, tickets[passenger])}", end="")
     print()
     # Print seats below the aisle
-    for i in range(num_cols, num_cols*2):
+    for i in range(num_cols, num_cols * 2):
         print(f"Column {i}: ".ljust(18), end="")
         for j in range(num_rows):
             print(f"{seated_pass_str(seated_passengers[j][i])}", end="")
         print()
-    print("_" * (num_rows * (str_len+1) + 19))
+    print("_" * (num_rows * (str_len + 1) + 19))
 
 
 def run_simulation(num_rows, num_cols, draw=False):
@@ -46,9 +49,9 @@ def run_simulation(num_rows, num_cols, draw=False):
     num_passengers = num_rows * num_cols * 2
 
     aisle_rows = [-1 for i in range(num_rows)]
-    occupied_seats = [[-1, -1]*num_cols for i in range(num_rows)]
+    occupied_seats = [[-1, -1] * num_cols for i in range(num_rows)]
     passengers = [i for i in range(num_passengers)]
-    tickets = [{'row':i,'seat':j} for i in range(num_rows) for j in range(num_cols*2)]
+    tickets = [{'row': i, 'seat': j} for i in range(num_rows) for j in range(num_cols * 2)]
     random.shuffle(passengers)
     queue = passengers.copy()
     # Passenger i is assigned seat tickets[i]
@@ -60,7 +63,7 @@ def run_simulation(num_rows, num_cols, draw=False):
     # Loop until all passengers are seated
     while num_seated < num_passengers:
         # Loop through each row from the back to the front, moving passengers up the aisle if possible
-        for aisle_row in range(len(aisle_rows)-1, -1, -1):
+        for aisle_row in range(len(aisle_rows) - 1, -1, -1):
             # Skip empty aisle rows
             if aisle_rows[aisle_row] == -1:
                 continue
@@ -92,6 +95,7 @@ def run_simulation(num_rows, num_cols, draw=False):
         time_steps += 1
     return time_steps, passengers
 
+
 times = []
 best_time = 0
 best_ordering = []
@@ -112,4 +116,3 @@ print(f"Best time steps: {best_time}")
 print(f"Best ordering: {best_ordering}")
 print(f"Worst time steps: {worst_time}")
 print(f"Worst ordering: {worst_ordering}")
-
