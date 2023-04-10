@@ -64,6 +64,8 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
         for j in range(num_cols * 2)
     ]
 
+    # TODO Incorporate time to access seat into service time, which is dependent on
+    # the number of passengers already seated in this row
     loading_mu = 1 / 3
 
     future_events = []
@@ -145,6 +147,9 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
     return clock
+
+
+# TODO: Create functions that generate different types of passenger orderings
 
 plane_rows = 10
 plane_cols = 1
