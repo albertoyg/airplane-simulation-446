@@ -1,11 +1,12 @@
 import random
+import statistics as stat
 
 def getAvg_p_in_aisle(p_in_aisle_for_this_long):
     total_people = 0
     total_time = 0
 
     for num_people, elapsed_time in p_in_aisle_for_this_long:
-        total_people += num_people
+        total_people += num_people*elapsed_time
         total_time += elapsed_time
     
     return total_people / total_time
@@ -218,6 +219,8 @@ for i in range(3):
         best_seed = i
         best_ordering = ordering
 
+
+
 print(enter_time)
 print(seat_time)
 print(f"Average time steps: {sum(times) / len(times)}")
@@ -227,4 +230,4 @@ print(f"Best seed: {best_seed}")
 print(f"Worst time steps: {worst_time}")
 print(f"Worst ordering: {worst_ordering}")
 print(f"Worst seed: {worst_seed}")
-print(f"Average Number of Passengers in aisle at any moment: {avgPinQ}")
+print(f"Average Number of Passengers in aisle at any moment: {stat.mean(avgPinQ)}")
