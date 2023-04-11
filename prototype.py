@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 # Prints a visual representation of the plane
-#TODO: Draw the plane with colors and shapes instead of ASCII
+# TODO: Draw the plane with colors and shapes instead of ASCII
 def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets):
     str_len = 7
 
@@ -47,19 +47,19 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets):
 
 
 def run_simulation(num_rows, num_cols, queue, draw=False):
-    #TODO: Track simulation stats such as the following
+    # TODO: Track simulation stats such as the following
     # Time each passenger spends standing on the plane
-    # Time each passenger spends accessing their seat
     # Time each passenger spends storing baggage
+    # Time each passenger spends accessing their seat
     # Average number of passengers standing on the plane at any one time
     # Total time to seat all passengers
 
     num_passengers = len(queue)
     max_seat_num = num_rows * num_cols * 2
-    assert  max_seat_num >= max(queue), \
+    assert max_seat_num >= max(queue), \
         f"Passenger has number {max(queue)} but only {max_seat_num} seats are available"
 
-    # Tracks which aisle positions are ocupied by which passengers
+    # Tracks which aisle positions are occupied by which passengers
     aisle_rows = [-1 for i in range(num_rows)]
     """
     TODO: 
@@ -81,6 +81,7 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
     """
     # Timers for which aisle positions are blocked by passengers accessing their seat
     accessing_seat = [0 for i in range(num_rows)]
+
     # Tracks which seats are occupied by which passengers
     occupied_seats = [[-1, -1] * num_cols for i in range(num_rows)]
     # Passenger i is assigned seat tickets[i]
@@ -129,14 +130,14 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
         if len(queue) > 0 and aisle_rows[0] == -1:
             passenger = queue.pop(0)
             aisle_rows[0] = passenger
-        if draw == True:
+        if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets)
         time_steps += 1
     return time_steps
 
 
-plane_rows = 20
-plane_cols = 3
+plane_rows = 10
+plane_cols = 1
 
 times = []
 best_time = 0
@@ -157,7 +158,7 @@ Ultimately we will be comparing the metrics of different orderings, so we want s
 of generating orderings to test.
 """
 
-for i in range(1000):
+for i in range(10000):
     ordering = [i for i in range(plane_rows * plane_cols * 2)]
     random.shuffle(ordering)
     time = run_simulation(plane_rows, plane_cols, ordering.copy(), draw=False)

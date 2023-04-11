@@ -15,6 +15,7 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, 
             return "".ljust(str_len) + "|"
         else:
             return f"{passenger}:{ticket['row']},{ticket['seat']}".ljust(str_len) + "|"
+
     print(f"Time: {clock}")
     print(f"Future events: {future_events}")
     # Print the row numbers
@@ -45,11 +46,13 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, 
 
 
 def run_simulation(num_rows, num_cols, queue, draw=False):
-    #TODO: Record simulation stats such as
+    # TODO: Record simulation stats such as
     # - Average time spent standing on the plane
     # - Average number standing on plane at any given time
     # - Total time spent loading the plane
     num_passengers = len(queue)
+
+
     max_seat_num = num_rows * num_cols * 2
     assert max_seat_num >= max(queue), \
         f"Passenger has number {max(queue)} but only {max_seat_num} seats are available"
@@ -79,6 +82,7 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
                 break
             next_passenger = queue.pop(0)
             ticket = tickets[next_passenger]
+            enter_time[next_passenger] = clock
             cur_row = 0
             while cur_row <= ticket['row']:
                 if cur_row == ticket['row']:
@@ -114,6 +118,7 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
             occupied_seats[event_row][tickets[passenger]['seat']] = passenger
             aisle_rows[event_row] = -1
             num_seated += 1
+            seat_time[passenger] = clock
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
         # Now update the aisle positions
@@ -151,9 +156,12 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
 
 # TODO: Create functions that generate different types of passenger orderings
 
+
 plane_rows = 10
 plane_cols = 1
 
+enter_time = [-1 for i in range(plane_rows * plane_cols * 2)]
+seat_time = [-1 for i in range(plane_rows * plane_cols * 2)]
 times = []
 best_time = 0
 best_seed = 0
@@ -161,7 +169,7 @@ best_ordering = []
 worst_time = 0
 worst_seed = 0
 worst_ordering = []
-for i in range(10000):
+for i in range(1):
     random.seed(i)
     ordering = [i for i in range(plane_rows * plane_cols * 2)]
     random.shuffle(ordering)
@@ -177,6 +185,8 @@ for i in range(10000):
         best_seed = i
         best_ordering = ordering
 
+print(enter_time)
+print(seat_time)
 print(f"Average time steps: {sum(times) / len(times)}")
 print(f"Best time steps: {best_time}")
 print(f"Best ordering: {best_ordering}")
