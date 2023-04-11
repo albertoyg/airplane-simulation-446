@@ -1,14 +1,15 @@
 import random
 import statistics as stat
 
+
 def getAvg_p_in_aisle(p_in_aisle_for_this_long):
     total_people = 0
     total_time = 0
 
     for num_people, elapsed_time in p_in_aisle_for_this_long:
-        total_people += num_people*elapsed_time
+        total_people += num_people * elapsed_time
         total_time += elapsed_time
-    
+
     return total_people / total_time
 
 
@@ -56,12 +57,11 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, 
     print("_" * (num_rows * (str_len + 1) + 19))
 
 
-def run_simulation(num_rows, num_cols, queue, draw=True):
+def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, service_time_lst, seat_time, draw=False):
     # TODO: Record simulation stats such as
     # - Average time spent standing on the plane
     # - Total time spent loading the plane
     num_passengers = len(queue)
-
 
     max_seat_num = num_rows * num_cols * 2
     assert max_seat_num >= max(queue), \
@@ -99,7 +99,9 @@ def run_simulation(num_rows, num_cols, queue, draw=True):
                     # Passenger is in the row of their assigned seat
                     # Create service event
                     service_time = random.expovariate(loading_mu)
-                    future_events.append((clock + service_time, 'baggage', cur_row))
+                    service_time_lst[next_passenger] = service_time
+                    start_loading_time[next_passenger] = clock
+                    future_events.append((clock + service_time, 'baggage', cur_row, next_passenger))
                     aisle_rows[cur_row] = next_passenger
                     break
                 # Check if next row is available
@@ -113,24 +115,21 @@ def run_simulation(num_rows, num_cols, queue, draw=True):
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
         # Plane loading is now in gridlock
-        
-        
-        # print number of passangers in aisle (# pas standing at time x)
+
+        # Print number of passengers in aisle (# pas standing at time x)
         number_of_p_in_asile = len([x for x in aisle_rows if x != -1])
         print("number of Passengers standing in plane: ", number_of_p_in_asile)
 
         # Sort future events and get next event
         future_events.sort()
         next_event = future_events.pop(0)
-        
-        # the amount of time the passengers in the aisle have been standing for 
+
+        # the amount of time the passengers in the aisle have been standing for
         time_elapsed = next_event[0] - clock;
         print("These many Passengers been standing for this much time: ", time_elapsed)
 
         # add tuple of (Passengers in aisle, elapsed time) to list
         p_in_aisle_for_this_long.append((number_of_p_in_asile, time_elapsed))
-
-
 
         clock = next_event[0]
         event_type = next_event[1]
@@ -147,7 +146,7 @@ def run_simulation(num_rows, num_cols, queue, draw=True):
             seat_time[passenger] = clock
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
-        
+
         # Now update the aisle positions
         for aisle_row in range(len(aisle_rows) - 1, -1, -1):
             # Skip empty aisle rows
@@ -163,7 +162,9 @@ def run_simulation(num_rows, num_cols, queue, draw=True):
                     # Passenger is in the row of their assigned seat
                     # Create service event
                     service_time = random.expovariate(loading_mu)
-                    future_events.append((clock + service_time, 'baggage', cur_row))
+                    start_loading_time[next_passenger] = clock
+                    service_time_lst[next_passenger] = service_time
+                    future_events.append((clock + service_time, 'baggage', cur_row, next_passenger))
                     aisle_rows[cur_row] = next_passenger
                     break
                 # Check if next row is available
@@ -189,6 +190,11 @@ plane_cols = 1
 avgPinQ = []
 enter_time = [-1 for i in range(plane_rows * plane_cols * 2)]
 seat_time = [-1 for i in range(plane_rows * plane_cols * 2)]
+customer_num = plane_rows * plane_cols * 2
+
+avg_total_time = []
+avg_waiting_time_inQ = []
+
 times = []
 best_time = 0
 best_seed = 0
@@ -196,7 +202,7 @@ best_ordering = []
 worst_time = 0
 worst_seed = 0
 worst_ordering = []
-for i in range(3):
+for i in range(10):
     # (num of customers in queue, for time x)
     p_in_aisle_for_this_long = []
 
@@ -204,7 +210,20 @@ for i in range(3):
     ordering = [i for i in range(plane_rows * plane_cols * 2)]
     random.shuffle(ordering)
     random.seed(10)
-    time = run_simulation(plane_rows, plane_cols, ordering.copy(), draw=True)
+
+    enter_time = [-1 for i in range(customer_num)]
+    start_loading_time = [-1 for i in range(customer_num)]
+    service_time_lst = [-1 for i in range(customer_num)]
+    seat_time = [-1 for i in range(customer_num)]
+    waiting_time_inQ = [-1 for i in range(customer_num)]
+
+    time = run_simulation(plane_rows, plane_cols, ordering.copy(), enter_time, start_loading_time, service_time_lst,
+                          seat_time, draw=True)
+
+    for index in range(0, customer_num):
+        waiting_time_inQ[index] = seat_time[index] - enter_time[index]
+    avg_waiting_time_inQ.append(stat.mean(waiting_time_inQ))
+    avg_total_time.append(max(seat_time))
     times.append(time)
 
     # do average of pass in aisle
@@ -220,9 +239,6 @@ for i in range(3):
         best_ordering = ordering
 
 
-
-print(enter_time)
-print(seat_time)
 print(f"Average time steps: {sum(times) / len(times)}")
 print(f"Best time steps: {best_time}")
 print(f"Best ordering: {best_ordering}")
@@ -231,3 +247,5 @@ print(f"Worst time steps: {worst_time}")
 print(f"Worst ordering: {worst_ordering}")
 print(f"Worst seed: {worst_seed}")
 print(f"Average Number of Passengers in aisle at any moment: {stat.mean(avgPinQ)}")
+print("Average Waiting Time in the Queue: ", stat.mean(avg_waiting_time_inQ))
+print("Average Total Simulation Time: ", stat.mean(avg_total_time))
