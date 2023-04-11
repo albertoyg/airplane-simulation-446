@@ -12,6 +12,7 @@ def getAvg_p_in_aisle(p_in_aisle_for_this_long):
 
     return total_people / total_time
 
+
 def create_orderings(plane_rows, plane_cols):
     all_orders = []
     # create back to front ordering
@@ -28,8 +29,8 @@ def create_orderings(plane_rows, plane_cols):
     # create window seats first ordering
     window_seats_first = []
     for row in range(plane_rows):
-        window_seats_first.append(row * (plane_cols*2))
-        window_seats_first.append(row * (plane_cols*2) + ((plane_cols*2)-1))
+        window_seats_first.append(row * (plane_cols * 2))
+        window_seats_first.append(row * (plane_cols * 2) + ((plane_cols * 2) - 1))
     # get the rest of the seats
     rest_of_seats = [x for x in front_to_back if x not in window_seats_first]
     # shuffle both to be random
@@ -44,7 +45,6 @@ def create_orderings(plane_rows, plane_cols):
     all_orders.append(window_seats_first)
 
     return all_orders
-
 
 
 def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, clock, future_events):
@@ -214,7 +214,6 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
     return clock
 
 
-
 plane_rows = 10
 plane_cols = 2
 
@@ -272,7 +271,6 @@ for i in range(10):
         best_time = time
         best_seed = i
         best_ordering = ordering
-
 
 print(f"Average time steps: {sum(times) / len(times)}")
 print(f"Best time steps: {best_time}")
