@@ -31,13 +31,31 @@ def create_orderings(plane_rows, plane_cols):
     for row in range(plane_rows):
         window_seats_first.append(row * (plane_cols * 2))
         window_seats_first.append(row * (plane_cols * 2) + ((plane_cols * 2) - 1))
-    # get the rest of the seats
-    rest_of_seats = [x for x in front_to_back if x not in window_seats_first]
-    # shuffle both to be random
+    # shuffle to be random
     random.shuffle(window_seats_first)
-    random.shuffle(rest_of_seats)
-    # merge as [windows first + rest of seats]
-    window_seats_first.extend(rest_of_seats)
+    # if plane has 3 cols 
+    if plane_cols >= 2:
+        nextCol = []
+        # fill in middle col
+        for row in range(plane_rows):
+            nextCol.append((row * (plane_cols * 2)+1))
+            nextCol.append((row * (plane_cols * 2) + ((plane_cols * 2) - 1)-1))
+        random.shuffle(nextCol)
+        # add it in so window_Seats_first = [window seats + middle seats]
+        window_seats_first.extend(nextCol)
+        # get rest of seats
+        rest_of_seats = [x for x in front_to_back if x not in window_seats_first]
+        random.shuffle(rest_of_seats)
+        # add it in so window_Seats_first = [window seats + middle seats + rest of seats]
+        window_seats_first.extend(rest_of_seats)
+    # plane has 2 cols 
+    else:
+        # get the rest of the seats
+        rest_of_seats = [x for x in front_to_back if x not in window_seats_first]
+        # shuffle to be random
+        random.shuffle(rest_of_seats)
+        # merge as [windows first + rest of seats]
+        window_seats_first.extend(rest_of_seats)
 
     all_orders.append(back_to_front)
     all_orders.append(front_to_back)
@@ -214,8 +232,8 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
     return clock
 
 
-plane_rows = 10
-plane_cols = 2
+plane_rows = 5
+plane_cols = 3
 
 # all_orders will be a list of seating orders: front to back, back to fron, randomized order, window seats first then the rest
 all_orders = create_orderings(plane_rows, plane_cols)
@@ -235,7 +253,7 @@ best_ordering = []
 worst_time = 0
 worst_seed = 0
 worst_ordering = []
-for i in range(10):
+for i in range(1):
     # (num of customers in queue, for time x)
     p_in_aisle_for_this_long = []
 
