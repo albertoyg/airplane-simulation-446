@@ -32,8 +32,10 @@ def create_orderings(plane_rows, plane_cols):
         window_seats_first.append(row * (plane_cols*2) + ((plane_cols*2)-1))
     # get the rest of the seats
     rest_of_seats = [x for x in front_to_back if x not in window_seats_first]
+    # shuffle both to be random
     random.shuffle(window_seats_first)
     random.shuffle(rest_of_seats)
+    # merge as [windows first + rest of seats]
     window_seats_first.extend(rest_of_seats)
 
     all_orders.append(back_to_front)
@@ -215,6 +217,7 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
 
 plane_rows = 10
 plane_cols = 2
+
 # all_orders will be a list of seating orders: front to back, back to fron, randomized order, window seats first then the rest 
 all_orders = create_orderings(plane_rows, plane_cols)
 
