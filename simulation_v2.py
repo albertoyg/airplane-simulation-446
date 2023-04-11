@@ -34,7 +34,7 @@ def create_orderings(plane_rows, plane_cols):
         window_seats_first.append(row * (plane_cols * 2) + ((plane_cols * 2) - 1))
     # shuffle to be random
     random.shuffle(window_seats_first)
-    # if plane has 3 cols 
+    # if plane has 3 cols
     if plane_cols >= 2:
         nextCol = []
         # fill in middle col
