@@ -1,5 +1,15 @@
 import random
 
+def getAvg_p_in_aisle(p_in_aisle_for_this_long):
+    total_people = 0
+    total_time = 0
+
+    for num_people, elapsed_time in p_in_aisle_for_this_long:
+        total_people += num_people
+        total_time += elapsed_time
+    
+    return total_people / total_time
+
 
 def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, clock, future_events):
     str_len = 7
@@ -45,10 +55,9 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, 
     print("_" * (num_rows * (str_len + 1) + 19))
 
 
-def run_simulation(num_rows, num_cols, queue, draw=False):
+def run_simulation(num_rows, num_cols, queue, draw=True):
     # TODO: Record simulation stats such as
     # - Average time spent standing on the plane
-    # - Average number standing on plane at any given time
     # - Total time spent loading the plane
     num_passengers = len(queue)
 
@@ -103,9 +112,25 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
         # Plane loading is now in gridlock
+        
+        
+        # print number of passangers in aisle (# pas standing at time x)
+        number_of_p_in_asile = len([x for x in aisle_rows if x != -1])
+        print("number of Passengers standing in plane: ", number_of_p_in_asile)
+
         # Sort future events and get next event
         future_events.sort()
         next_event = future_events.pop(0)
+        
+        # the amount of time the passengers in the aisle have been standing for 
+        time_elapsed = next_event[0] - clock;
+        print("These many Passengers been standing for this much time: ", time_elapsed)
+
+        # add tuple of (Passengers in aisle, elapsed time) to list
+        p_in_aisle_for_this_long.append((number_of_p_in_asile, time_elapsed))
+
+
+
         clock = next_event[0]
         event_type = next_event[1]
         event_row = next_event[2]
@@ -121,6 +146,7 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
             seat_time[passenger] = clock
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
+        
         # Now update the aisle positions
         for aisle_row in range(len(aisle_rows) - 1, -1, -1):
             # Skip empty aisle rows
@@ -151,15 +177,15 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
                     break
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
+
     return clock
 
 
 # TODO: Create functions that generate different types of passenger orderings
 
-
 plane_rows = 10
 plane_cols = 1
-
+avgPinQ = []
 enter_time = [-1 for i in range(plane_rows * plane_cols * 2)]
 seat_time = [-1 for i in range(plane_rows * plane_cols * 2)]
 times = []
@@ -169,13 +195,20 @@ best_ordering = []
 worst_time = 0
 worst_seed = 0
 worst_ordering = []
-for i in range(1):
+for i in range(3):
+    # (num of customers in queue, for time x)
+    p_in_aisle_for_this_long = []
+
     random.seed(i)
     ordering = [i for i in range(plane_rows * plane_cols * 2)]
     random.shuffle(ordering)
     random.seed(10)
-    time = run_simulation(plane_rows, plane_cols, ordering.copy(), draw=False)
+    time = run_simulation(plane_rows, plane_cols, ordering.copy(), draw=True)
     times.append(time)
+
+    # do average of pass in aisle
+    avgPinQ.append(getAvg_p_in_aisle(p_in_aisle_for_this_long))
+
     if time > worst_time:
         worst_time = time
         worst_seed = i
@@ -194,3 +227,4 @@ print(f"Best seed: {best_seed}")
 print(f"Worst time steps: {worst_time}")
 print(f"Worst ordering: {worst_ordering}")
 print(f"Worst seed: {worst_seed}")
+print(f"Average Number of Passengers in aisle at any moment: {avgPinQ}")
