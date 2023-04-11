@@ -109,6 +109,24 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, 
     print("_" * (num_rows * (str_len + 1) + 19))
 
 
+def get_num_seated(occupied_seats, ticket):
+    num_seated = 0
+    cols = len(occupied_seats[0])
+    # Passenger is seated on the top side
+    if ticket['seat'] < cols // 2:
+        # Count the number of seated passengers from the aisle to the passenger's seat
+        for i in range((cols // 2)-1, ticket['seat'], -1):
+            if occupied_seats[ticket['row']][i] != -1:
+                num_seated += 1
+    # Passenger is seated on the bottom side
+    else:
+        # Count the number of seated passengers from the aisle to the passenger's seat
+        for i in range(cols // 2, ticket['seat']):
+            if occupied_seats[ticket['row']][i] != -1:
+                num_seated += 1
+    return num_seated
+
+
 def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, service_time_lst, seat_time, draw=False):
     num_passengers = len(queue)
 
@@ -128,7 +146,8 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
 
     # TODO Incorporate time to access seat into service time, which is dependent on
     # the number of passengers already seated in this row
-    loading_mu = 1 / 3
+    loading_mu = 3
+    seating_mu = 2
 
     future_events = []
     num_seated = 0
@@ -147,10 +166,15 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
                 if cur_row == ticket['row']:
                     # Passenger is in the row of their assigned seat
                     # Create service event
-                    service_time = random.expovariate(loading_mu)
+                    service_time = random.expovariate(1 / loading_mu)
+                    # Get the number of seated passengers in the way of this passenger
+                    num_blocking = get_num_seated(occupied_seats, ticket)
+                    access_time = random.expovariate(1 / ((num_blocking + 1) * seating_mu))
                     service_time_lst[next_passenger] = service_time
                     start_loading_time[next_passenger] = clock
-                    future_events.append((clock + service_time, 'baggage', cur_row, next_passenger))
+                    future_events.append(
+                        (clock + service_time + access_time, 'baggage', cur_row, next_passenger)
+                    )
                     aisle_rows[cur_row] = next_passenger
                     break
                 # Check if next row is available
@@ -211,9 +235,12 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
                     # Passenger is in the row of their assigned seat
                     # Create service event
                     service_time = random.expovariate(loading_mu)
+                    # Get the number of seated passengers in the way of this passenger
+                    num_blocking = get_num_seated(occupied_seats, ticket)
+                    access_time = random.expovariate(1 / ((num_blocking + 1) * seating_mu))
                     start_loading_time[next_passenger] = clock
                     service_time_lst[next_passenger] = service_time
-                    future_events.append((clock + service_time, 'baggage', cur_row, next_passenger))
+                    future_events.append((clock + service_time + access_time, 'baggage', cur_row, next_passenger))
                     aisle_rows[cur_row] = next_passenger
                     break
                 # Check if next row is available
