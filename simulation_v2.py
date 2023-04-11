@@ -266,8 +266,6 @@ plane_cols = 3
 all_orders = create_orderings(plane_rows, plane_cols)
 
 avgPinQ = []
-enter_time = [-1 for i in range(plane_rows * plane_cols * 2)]
-seat_time = [-1 for i in range(plane_rows * plane_cols * 2)]
 customer_num = plane_rows * plane_cols * 2
 
 avg_total_time = []
