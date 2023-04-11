@@ -1,5 +1,6 @@
 import random
 import statistics as stat
+from prettytable import PrettyTable
 
 
 def getAvg_p_in_aisle(p_in_aisle_for_this_long):
@@ -127,8 +128,13 @@ def get_num_seated(occupied_seats, ticket):
     return num_seated
 
 
-def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, service_time_lst, seat_time, draw=False):
+def run_simulation(num_rows, num_cols, queue, draw=False):
     num_passengers = len(queue)
+    arrival_time = [ 0 for i in range(num_passengers)]
+    service_start_time = [ 0 for i in range(num_passengers)]
+    service_end_time = [ 0 for i in range(num_passengers)]
+    # (num of customers in queue, for time x)
+    p_in_aisle_for_this_long = []
 
     max_seat_num = num_rows * num_cols * 2
     assert max_seat_num >= max(queue), \
@@ -143,9 +149,7 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
         for i in range(num_rows)
         for j in range(num_cols * 2)
     ]
-
-    # TODO Incorporate time to access seat into service time, which is dependent on
-    # the number of passengers already seated in this row
+    # Mean service time for loading and accessing seat
     loading_mu = 3
     seating_mu = 2
 
@@ -159,8 +163,8 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
             if len(queue) == 0:
                 break
             next_passenger = queue.pop(0)
+            arrival_time[next_passenger] = clock
             ticket = tickets[next_passenger]
-            enter_time[next_passenger] = clock
             cur_row = 0
             while cur_row <= ticket['row']:
                 if cur_row == ticket['row']:
@@ -170,11 +174,11 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
                     # Get the number of seated passengers in the way of this passenger
                     num_blocking = get_num_seated(occupied_seats, ticket)
                     access_time = random.expovariate(1 / ((num_blocking + 1) * seating_mu))
-                    service_time_lst[next_passenger] = service_time
-                    start_loading_time[next_passenger] = clock
                     future_events.append(
                         (clock + service_time + access_time, 'baggage', cur_row, next_passenger)
                     )
+                    service_start_time[next_passenger] = clock
+                    service_end_time[next_passenger] = clock + service_time + access_time
                     aisle_rows[cur_row] = next_passenger
                     break
                 # Check if next row is available
@@ -189,20 +193,19 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
         # Plane loading is now in gridlock
 
-        # Print number of passengers in aisle (# pas standing at time x)
-        number_of_p_in_asile = len([x for x in aisle_rows if x != -1])
-        # print("number of Passengers standing in plane: ", number_of_p_in_asile)
+        # Get number of passengers in aisle (# pas standing at time x)
+        number_of_p_in_aisle = len([x for x in aisle_rows if x != -1])
 
         # Sort future events and get next event
         future_events.sort()
         next_event = future_events.pop(0)
 
         # the amount of time the passengers in the aisle have been standing for
-        time_elapsed = next_event[0] - clock;
+        time_elapsed = next_event[0] - clock
         # print("These many Passengers been standing for this much time: ", time_elapsed)
 
         # add tuple of (Passengers in aisle, elapsed time) to list
-        p_in_aisle_for_this_long.append((number_of_p_in_asile, time_elapsed))
+        p_in_aisle_for_this_long.append((number_of_p_in_aisle, time_elapsed))
 
         clock = next_event[0]
         event_type = next_event[1]
@@ -216,7 +219,6 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
             occupied_seats[event_row][tickets[passenger]['seat']] = passenger
             aisle_rows[event_row] = -1
             num_seated += 1
-            seat_time[passenger] = clock
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
 
@@ -238,9 +240,11 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
                     # Get the number of seated passengers in the way of this passenger
                     num_blocking = get_num_seated(occupied_seats, ticket)
                     access_time = random.expovariate(1 / ((num_blocking + 1) * seating_mu))
-                    start_loading_time[next_passenger] = clock
-                    service_time_lst[next_passenger] = service_time
-                    future_events.append((clock + service_time + access_time, 'baggage', cur_row, next_passenger))
+                    future_events.append(
+                        (clock + service_time + access_time, 'baggage', cur_row, next_passenger)
+                    )
+                    service_start_time[next_passenger] = clock
+                    service_end_time[next_passenger] = clock + service_time + access_time
                     aisle_rows[cur_row] = next_passenger
                     break
                 # Check if next row is available
@@ -256,74 +260,96 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
         if draw:
             draw_plane(num_rows, num_cols, aisle_rows, occupied_seats, tickets, clock, future_events)
 
-    return clock
+    # Calculate simulation final statistics
+    total_time = clock
+    avg_time_in_aisle = sum([service_end_time[i] - arrival_time[i] for i in range(num_passengers)]) / num_passengers
+    avg_P_in_aisle = getAvg_p_in_aisle(p_in_aisle_for_this_long)
+    return total_time, avg_time_in_aisle, avg_P_in_aisle
 
+# Sizes are (rows, cols), where cols is number of seats on one side of the aisle
+plane_sizes = {
+    'small': (12, 2),
+    'medium': (25, 2),
+    'large': (43, 3)
+}
+total_times = {
+    'small': {'btf': [],'ftb': [],'rdm': [],'win': []},
+    'medium': {'btf': [],'ftb': [],'rdm': [],'win': []},
+    'large': {'btf': [],'ftb': [],'rdm': [],'win': []}
+}
+avgs_time_in_aisle = {
+    'small': {'btf': [],'ftb': [],'rdm': [],'win': []},
+    'medium': {'btf': [],'ftb': [],'rdm': [],'win': []},
+    'large': {'btf': [],'ftb': [],'rdm': [],'win': []}
+}
+avgs_P_in_aisle = {
+    'small': {'btf': [],'ftb': [],'rdm': [],'win': []},
+    'medium': {'btf': [],'ftb': [],'rdm': [],'win': []},
+    'large': {'btf': [],'ftb': [],'rdm': [],'win': []}
+}
+ordering_labels = ['btf', 'ftb', 'rdm', 'win']
 
-plane_rows = 5
-plane_cols = 3
+num_sims = 100
+total_sims = 0
+for i in range(num_sims):
+    # Run one simulation for each plane size
+    for size in plane_sizes:
+        # Get the four different orderings
+        plane_rows, plane_cols = plane_sizes[size]
+        orderings = create_orderings(plane_rows, plane_cols)
+        for j, ordering in enumerate(orderings):
+            # Init random seed so that all simulations in this run have the same service times
+            random.seed(i)
+            total_time, avg_time_in_aisle, avg_P_in_aisle  = run_simulation(plane_rows, plane_cols, ordering.copy(), draw=False)
+            total_times[size][ordering_labels[j]].append(total_time)
+            avgs_time_in_aisle[size][ordering_labels[j]].append(avg_time_in_aisle)
+            avgs_P_in_aisle[size][ordering_labels[j]].append(avg_P_in_aisle)
+            total_sims += 1
 
-# all_orders will be a list of seating orders: front to back, back to fron, randomized order, window seats first then the rest
-all_orders = create_orderings(plane_rows, plane_cols)
+print("Total simulations run: {}".format(total_sims))
 
-avgPinQ = []
-enter_time = [-1 for i in range(plane_rows * plane_cols * 2)]
-seat_time = [-1 for i in range(plane_rows * plane_cols * 2)]
-customer_num = plane_rows * plane_cols * 2
+total_time_table = PrettyTable()
 
-avg_total_time = []
-avg_waiting_time_inQ = []
+column_names = ["Plane Size","Back to Front","Front to Back","Random","Window"]
+col_data = [
+    ["small", "medium", "large"],
+    [round(sum(total_times[size]['btf']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(total_times[size]['ftb']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(total_times[size]['rdm']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(total_times[size]['win']) / num_sims, 1) for size in plane_sizes]
+]
+length = len(column_names)
+for i in range(length):
+    total_time_table.add_column(column_names[i],col_data[i])
+print("------------------AVERAGE TOTAL TIME------------------")
+print(total_time_table)
+print()
 
-times = []
-best_time = 0
-best_seed = 0
-best_ordering = []
-worst_time = 0
-worst_seed = 0
-worst_ordering = []
-for i in range(1):
-    # (num of customers in queue, for time x)
-    p_in_aisle_for_this_long = []
+avg_time_in_aisle_table = PrettyTable()
+col_data = [
+    ["small", "medium", "large"],
+    [round(sum(avgs_time_in_aisle[size]['btf']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(avgs_time_in_aisle[size]['ftb']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(avgs_time_in_aisle[size]['rdm']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(avgs_time_in_aisle[size]['win']) / num_sims, 1) for size in plane_sizes]
+]
+length = len(column_names)
+for i in range(length):
+    avg_time_in_aisle_table.add_column(column_names[i],col_data[i])
+print("------------------AVERAGE TIME IN AISLE------------------")
+print(avg_time_in_aisle_table)
+print()
 
-    random.seed(i)
-    ordering = [i for i in range(plane_rows * plane_cols * 2)]
-
-    random.shuffle(ordering)
-    random.seed(10)
-
-    enter_time = [-1 for i in range(customer_num)]
-    start_loading_time = [-1 for i in range(customer_num)]
-    service_time_lst = [-1 for i in range(customer_num)]
-    seat_time = [-1 for i in range(customer_num)]
-    waiting_time_inQ = [-1 for i in range(customer_num)]
-
-    time = run_simulation(plane_rows, plane_cols, ordering.copy(), enter_time, start_loading_time, service_time_lst,
-                          seat_time, draw=False)
-
-    for index in range(0, customer_num):
-        waiting_time_inQ[index] = seat_time[index] - enter_time[index]
-    avg_waiting_time_inQ.append(stat.mean(waiting_time_inQ))
-    avg_total_time.append(max(seat_time))
-    times.append(time)
-
-    # do average of pass in aisle
-    avgPinQ.append(getAvg_p_in_aisle(p_in_aisle_for_this_long))
-
-    if time > worst_time:
-        worst_time = time
-        worst_seed = i
-        worst_ordering = ordering
-    elif time < best_time or best_time == 0:
-        best_time = time
-        best_seed = i
-        best_ordering = ordering
-
-print(f"Average time steps: {sum(times) / len(times)}")
-print(f"Best time steps: {best_time}")
-print(f"Best ordering: {best_ordering}")
-print(f"Best seed: {best_seed}")
-print(f"Worst time steps: {worst_time}")
-print(f"Worst ordering: {worst_ordering}")
-print(f"Worst seed: {worst_seed}")
-print(f"Average Number of Passengers in aisle at any moment: {stat.mean(avgPinQ)}")
-print("Average Waiting Time in the Queue: ", stat.mean(avg_waiting_time_inQ))
-print("Average Total Simulation Time: ", stat.mean(avg_total_time))
+avg_P_in_aisle_table = PrettyTable()
+col_data = [
+    ["small", "medium", "large"],
+    [round(sum(avgs_P_in_aisle[size]['btf']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(avgs_P_in_aisle[size]['ftb']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(avgs_P_in_aisle[size]['rdm']) / num_sims, 1) for size in plane_sizes],
+    [round(sum(avgs_P_in_aisle[size]['win']) / num_sims, 1) for size in plane_sizes]
+]
+length = len(column_names)
+for i in range(length):
+    avg_P_in_aisle_table.add_column(column_names[i],col_data[i])
+print("------------------AVERAGE P IN AISLE------------------")
+print(avg_P_in_aisle_table)
