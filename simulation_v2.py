@@ -58,9 +58,6 @@ def draw_plane(num_rows, num_cols, aisle_positions, seated_passengers, tickets, 
 
 
 def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, service_time_lst, seat_time, draw=False):
-    # TODO: Record simulation stats such as
-    # - Average time spent standing on the plane
-    # - Total time spent loading the plane
     num_passengers = len(queue)
 
     max_seat_num = num_rows * num_cols * 2
