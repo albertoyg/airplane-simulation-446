@@ -3,9 +3,8 @@ import statistics as stat
 from prettytable import PrettyTable
 
 
-def getAvg_p_in_aisle(p_in_aisle_for_this_long):
+def getAvg_p_in_aisle(p_in_aisle_for_this_long, total_time):
     total_people = 0
-    total_time = 0
 
     for num_people, elapsed_time in p_in_aisle_for_this_long:
         total_people += num_people * elapsed_time
@@ -15,13 +14,23 @@ def getAvg_p_in_aisle(p_in_aisle_for_this_long):
 
 
 def create_orderings(plane_rows, plane_cols):
+    num_passengers = plane_rows * plane_cols * 2
     all_orders = []
-    # create back to front ordering
-    back_to_front = [i for i in range(plane_rows * plane_cols * 2)]
-    back_to_front = sorted(back_to_front, reverse=True)
-
-    # create front to back ordering
-    front_to_back = [i for i in range(plane_rows * plane_cols * 2)]
+    '''
+    'small': (12, 2),
+    'medium': (25, 2),
+    'large': (43, 3)'''
+    passengers = [i for i in range(num_passengers)]
+    # Split passengers into 3 zones
+    zone1 = passengers[:num_passengers // 3]
+    zone2 = passengers[num_passengers // 3:num_passengers // 3 * 2]
+    zone3 = passengers[num_passengers // 3 * 2:]
+    # Shuffle each zone
+    random.shuffle(zone1)
+    random.shuffle(zone2)
+    random.shuffle(zone3)
+    back_to_front = zone3.copy()+zone2.copy()+zone1.copy()
+    front_to_back = zone1.copy()+zone2.copy()+zone3.copy()
 
     # create random order
     random_order = list(range(plane_rows * plane_cols * 2))
@@ -45,14 +54,14 @@ def create_orderings(plane_rows, plane_cols):
         # add it in so window_Seats_first = [window seats + middle seats]
         window_seats_first.extend(nextCol)
         # get rest of seats
-        rest_of_seats = [x for x in front_to_back if x not in window_seats_first]
+        rest_of_seats = [x for x in range(num_passengers) if x not in window_seats_first]
         random.shuffle(rest_of_seats)
         # add it in so window_Seats_first = [window seats + middle seats + rest of seats]
         window_seats_first.extend(rest_of_seats)
     # plane has 2 cols 
     else:
         # get the rest of the seats
-        rest_of_seats = [x for x in front_to_back if x not in window_seats_first]
+        rest_of_seats = [x for x in range(num_passengers) if x not in window_seats_first]
         # shuffle to be random
         random.shuffle(rest_of_seats)
         # merge as [windows first + rest of seats]
@@ -263,7 +272,7 @@ def run_simulation(num_rows, num_cols, queue, draw=False):
     # Calculate simulation final statistics
     total_time = clock
     avg_time_in_aisle = sum([service_end_time[i] - arrival_time[i] for i in range(num_passengers)]) / num_passengers
-    avg_P_in_aisle = getAvg_p_in_aisle(p_in_aisle_for_this_long)
+    avg_P_in_aisle = getAvg_p_in_aisle(p_in_aisle_for_this_long, total_time)
     return total_time, avg_time_in_aisle, avg_P_in_aisle
 
 # Sizes are (rows, cols), where cols is number of seats on one side of the aisle
@@ -289,7 +298,7 @@ avgs_P_in_aisle = {
 }
 ordering_labels = ['btf', 'ftb', 'rdm', 'win']
 
-num_sims = 100
+num_sims = 1000
 total_sims = 0
 for i in range(num_sims):
     # Run one simulation for each plane size
