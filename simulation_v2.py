@@ -17,14 +17,14 @@ def create_orderings(plane_rows, plane_cols):
     # create back to front ordering
     back_to_front = [i for i in range(plane_rows * plane_cols * 2)]
     back_to_front = sorted(back_to_front, reverse=True)
-    
+
     # create front to back ordering
     front_to_back = [i for i in range(plane_rows * plane_cols * 2)]
-    
+
     # create random order
     random_order = list(range(plane_rows * plane_cols * 2))
     random.shuffle(random_order)
-    
+
     # create window seats first ordering
     window_seats_first = []
     for row in range(plane_rows):
@@ -218,7 +218,7 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
 plane_rows = 10
 plane_cols = 2
 
-# all_orders will be a list of seating orders: front to back, back to fron, randomized order, window seats first then the rest 
+# all_orders will be a list of seating orders: front to back, back to fron, randomized order, window seats first then the rest
 all_orders = create_orderings(plane_rows, plane_cols)
 
 avgPinQ = []
@@ -245,7 +245,6 @@ for i in range(10):
 
     random.shuffle(ordering)
     random.seed(10)
-    time = run_simulation(plane_rows, plane_cols, ordering.copy(), draw=False)
 
     enter_time = [-1 for i in range(customer_num)]
     start_loading_time = [-1 for i in range(customer_num)]
@@ -254,7 +253,7 @@ for i in range(10):
     waiting_time_inQ = [-1 for i in range(customer_num)]
 
     time = run_simulation(plane_rows, plane_cols, ordering.copy(), enter_time, start_loading_time, service_time_lst,
-                          seat_time, draw=True)
+                          seat_time, draw=False)
 
     for index in range(0, customer_num):
         waiting_time_inQ[index] = seat_time[index] - enter_time[index]
