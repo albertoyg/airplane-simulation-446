@@ -198,7 +198,7 @@ def run_simulation(num_rows, num_cols, queue, enter_time, start_loading_time, se
         next_event = future_events.pop(0)
 
         # the amount of time the passengers in the aisle have been standing for
-        time_elapsed = next_event[0] - clock;
+        time_elapsed = next_event[0] - clock
         # print("These many Passengers been standing for this much time: ", time_elapsed)
 
         # add tuple of (Passengers in aisle, elapsed time) to list
