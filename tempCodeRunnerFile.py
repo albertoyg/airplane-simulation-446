@@ -1,0 +1,1 @@
+avg_time_in_aisle = sum([service_end_time[i] - arrival_time[i] for i in range(num_passengers)]) / num_passengers
