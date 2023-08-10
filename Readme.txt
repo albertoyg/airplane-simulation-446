@@ -1,3 +1,5 @@
+See project report: [view PDF](./projectReport)
+
 To run: 
         python3 simulator.py
 
