@@ -1,11 +1,19 @@
-See project report: [view PDF](./projectReport.pdf)
+# Project Report
 
-To run: 
-        python3 simulator.py
+- [View the Project Report (PDF)](./projectReport.pdf)
 
-If you'd like to see the plane drawn, run the simulation with draw set to True on line 312
-IMPORTANT NOTE: Set the num_sims to 1 if you are drawing the plane. 
+## Execution Instructions
 
-You may change the total number of simulations at line 301
-You may change the size of the aircraft by changing the values in the plane_size dictionary. 
-Note the dictionary uses values (rows, cols) where cols only refer to the number of columns on one side of the aisle. 
+1. To run the simulator:
+    ```bash
+    python3 simulator.py
+    ```
+
+2. If you'd like to visualize the plane:
+   - Set `draw` to `True` on line 312.
+   - **IMPORTANT**: Ensure `num_sims` is set to `1` when drawing the plane.
+
+## Configuration Notes
+
+- You can adjust the number of simulations at line 301.
+- The aircraft's size can be modified by altering values in the `plane_size` dictionary. This dictionary uses the format `(rows, cols)`, where `cols` denotes the number of columns on one side of the aisle.
