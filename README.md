@@ -1,4 +1,4 @@
-See project report: [view PDF](./projectReport)
+See project report: [view PDF](./projectReport.pdf)
 
 To run: 
         python3 simulator.py
